@@ -1,9 +1,10 @@
-from plan_encoding.encode_condition import encode_conditions
-from plan_encoding.tree import parse_plan_tree
+from os import path
 
 import numpy as np
-from os import path
 import torch
+
+from encode_condition import encode_conditions
+from tree import parse_plan_tree
 from util import normalize_label, EncodeContext
 
 
@@ -66,14 +67,16 @@ def encode_job_plan_batch(ctx: EncodeContext, plans):
     print("max nodes: ", max_nodes, len(condition2s_batch))
     operators_batch = np.array([np.pad(v, ((0, max_nodes - len(v)), (0, 0)), 'constant') for v in operators_batch])
     extra_infos_batch = np.array([np.pad(v, ((0, max_nodes - len(v)), (0, 0)), 'constant') for v in extra_infos_batch])
-    condition1s_batch = np.array([np.pad(v, ((0, max_nodes - len(v)), (0, 0), (0, 0)), 'constant') for v in condition1s_batch])
-    condition2s_batch = np.array([np.pad(v, ((0, max_nodes - len(v)), (0, 0), (0, 0)), 'constant') for v in condition2s_batch])
+    condition1s_batch = np.array(
+        [np.pad(v, ((0, max_nodes - len(v)), (0, 0), (0, 0)), 'constant') for v in condition1s_batch])
+    condition2s_batch = np.array(
+        [np.pad(v, ((0, max_nodes - len(v)), (0, 0), (0, 0)), 'constant') for v in condition2s_batch])
     samples_batch = np.array([np.pad(v, ((0, max_nodes - len(v)), (0, 0)), 'constant') for v in samples_batch])
     condition_masks_batch = np.array([np.pad(v, (0, max_nodes - len(v)), 'constant') for v in condition_masks_batch])
     mapping_batch = np.array([np.pad(v, ((0, max_nodes - len(v)), (0, 0)), 'constant') for v in mapping_batch])
 
     print('operators_batch: ', operators_batch.shape)
-    
+
     target_cost_batch = torch.FloatTensor(target_cost_batch)
     target_card_batch = torch.FloatTensor(target_card_batch)
     operators_batch = torch.FloatTensor([operators_batch])
@@ -106,7 +109,8 @@ def encode_job_plan(ctx: EncodeContext, plan, condition_max_num):
         condition_masks.append([])
         mapping.append([])
         for node in level:
-            operator, extra_info, condition1, condition2, sample, condition_mask = encode_job_plan_node(ctx, node.item, condition_max_num)
+            operator, extra_info, condition1, condition2, sample, condition_mask = encode_job_plan_node(ctx, node.item,
+                                                                                                        condition_max_num)
             operators[-1].append(operator)
             extra_infos[-1].append(extra_info)
             condition1s[-1].append(condition1)
@@ -126,8 +130,8 @@ def encode_job_plan(ctx: EncodeContext, plan, condition_max_num):
 def encode_job_plan_node(ctx: EncodeContext, node, condition_max_num):
     # operator + first_condition + second_condition + relation
     extra_info_num = max(len(ctx.columns_id), len(ctx.tables_id), len(ctx.indexes_id))
-    extra_info_vec = np.array([0] * extra_info_num)                                     # meta data: indicate which column, table or index is referred
-    operator_vec = np.array([0] * len(ctx.physical_ops_id))                             # indicate the node type
+    extra_info_vec = np.array([0] * extra_info_num)  # meta data: indicate which column, table or index is referred
+    operator_vec = np.array([0] * len(ctx.physical_ops_id))  # indicate the node type
     condition1_vec = np.array([[0] * ctx.condition_op_dim] * condition_max_num)
     condition2_vec = np.array([[0] * ctx.condition_op_dim] * condition_max_num)
     sample_vec = np.array([1] * 1000)
@@ -156,9 +160,14 @@ def encode_job_plan_node(ctx: EncodeContext, node, condition_max_num):
                 extra_info_inx = ctx.indexes_id[index_name]
             extra_info_vec[extra_info_inx - 1] = 1
             # YOUR CODE HERE: encode condition_filter to condition1_vec and condition_index to condition2_vec and bitmap
-            # to sample_vec. You can use the function encode_conditions and encode_sample here.
-
-
+            # to sample_vec. You can use the function encode_condition and encode_sample here.
+            condition1_vec = encode_conditions(ctx, node['condition_filter'], relation_name, index_name,
+                                               condition_max_num)
+            condition2_vec = encode_conditions(ctx, node['condition_index'], relation_name, index_name,
+                                               condition_max_num)
+            if 'bitmap' in node:
+                sample_vec = encode_sample(node['bitmap'])
+                has_bitmap = 1
     return operator_vec, extra_info_vec, condition1_vec, condition2_vec, sample_vec, has_bitmap
 
 
@@ -184,4 +193,3 @@ def merge_plans_level(level1, level2, is_mapping=False):
                         level[i][1] += base
         level1[idx] += level
     return level1
-

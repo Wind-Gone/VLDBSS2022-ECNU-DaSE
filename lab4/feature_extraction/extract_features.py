@@ -1,6 +1,7 @@
 import json
 
-from feature_extraction.node_features import class2json, extract_feature_from_node
+from node_features import class2json, extract_feature_from_node
+
 
 # plan2seq converts the structure of this plan from a tree to a sequence.
 # for example, if the plan is Join1(Scan1, Join2(Scan2, Scan3)), then the final sequence is:
@@ -36,7 +37,7 @@ def feature_extractor(input_path, out_path):
     with open(out_path, 'w') as out:
         with open(input_path, 'r') as f:
             for index, plan in enumerate(f.readlines()):
-                print (index)
+                print(index)
                 if plan != 'null\n':
                     plan = json.loads(plan)[0]['Plan']
                     if plan['Node Type'] == 'Aggregate':
@@ -46,7 +47,7 @@ def feature_extractor(input_path, out_path):
                     cost, cardinality = plan['Actual Total Time'], plan['Actual Rows']
                     seq, _ = plan2seq(plan, alias2table)
                     seqs = PlanInSeq(seq, cost, cardinality)
-                    out.write(class2json(seqs)+'\n')
+                    out.write(class2json(seqs) + '\n')
 
 
 class PlanInSeq(object):

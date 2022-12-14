@@ -1,5 +1,5 @@
-from random import sample
 import time
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -41,7 +41,7 @@ class Representation(nn.Module):
         # The axes semantics are (num_layers, minibatch_size, hidden_dim)
         return (torch.zeros(1, batch_size, hidden_dim),
                 torch.zeros(1, batch_size, hidden_dim))
-    
+
     # Operators
     def forward(self, operators, extra_infos, condition1s, condition2s, samples, condition_masks, mapping):
         batch_size = 0
@@ -83,7 +83,6 @@ class Representation(nn.Module):
         last_output = (last_output1 + last_output2) / 2
         condition_embedding = self.batch_norm1(last_output).view(num_level, num_node_per_level, -1)
 
-
         sample_output = F.relu(self.sample_mlp(samples))
         sample_output = sample_output * condition_masks
 
@@ -100,20 +99,25 @@ class Representation(nn.Module):
         for idx in reversed(range(0, num_level - 1)):
             # YOUR CODE HERE: select indexes of left/right children
             # calculate mapp_left/mapp_right from mapping.
-
+            mapp_left = mapping[idx][:, 0]
+            mapp_right = mapping[idx][:, 1]
             pad = torch.zeros_like(hid)[:, 0].unsqueeze(1)
             next_hid = torch.cat((pad, hid), 1)
             pad = torch.zeros_like(cid)[:, 0].unsqueeze(1)
             next_cid = torch.cat((pad, cid), 1)
-            hid_left = torch.index_select(next_hid, 1, mapp_left)   # hidden states of left children 
-            cid_left = torch.index_select(next_cid, 1, mapp_left)   # cell states of left children
-            hid_right = torch.index_select(next_hid, 1, mapp_right) # hidden states of right children
-            cid_right = torch.index_select(next_cid, 1, mapp_right) # cell states of right children
+            hid_left = torch.index_select(next_hid, 1, mapp_left)  # hidden states of left children
+            cid_left = torch.index_select(next_cid, 1, mapp_left)  # cell states of left children
+            hid_right = torch.index_select(next_hid, 1, mapp_right)  # hidden states of right children
+            cid_right = torch.index_select(next_cid, 1, mapp_right)  # cell states of right children
             # YOUR CODE HERE: calculate hid and cid of this level
             # 1. calculate hid(cid) by averaging hid_left(cid_left) and hid_right(cid_right)
             # 2. get input of this level
             # 3. feed input of this level and states(hid and cid) to self.lstm2 to get new states
             # You can check line 97-98 when implementing 2 and 3.
+            hid = (hid_left + hid_right) / 2
+            cid = (cid_left + cid_right) / 2
+            last_level = out[idx].view(num_node_per_level, 1, -1)
+            _, (hid, cid) = self.lstm2(last_level, (hid, cid))
         output = hid[0]
         # print (output.size())
         # torch.Size([133, 128])

@@ -20,7 +20,7 @@ operators = ["Projection", "Selection", "Sort", "HashAgg", "HashJoin", "TableSca
 #              /         \
 #          IndexScan_3   IndexScan_4
 #    For example, we can concatenate the node features of the above plan as follows:
-#    [Feat(HashJoin_1)], [Feat(IndexJoin_2)], [Feat(IndexScan_3)], [Padding], [Feat(IndexScan_4)], [Padding], [Padding], [Feat(TableScan_6)], [Padding], [Padding]
+#    [Feat(HashJoin_1)], [Feat(IndexJoin_2)], [Feat(IndexScan_3)], [Feat(IndexScan_4)], [Padding], [Feat(TableScan_6)], [Padding]
 #    Notice1: When we traverse all the children in DFS, we insert [Padding] as the end of the children. In this way, we
 #    have an one-on-one mapping between the plan tree and the DFS order sequence.
 #    Notice2: Since the different plans have the different number of nodes, we need padding to make the lengths of the
@@ -38,17 +38,23 @@ class PlanFeatureCollector:
     def add_operator(self, op: Operator):
         # YOUR CODE HERE: extract features from op
         op_type = []
+        print(op)
         for i, v in enumerate(operators):
-            if v in op.id:
+            if v in op['id']:
                 op_type.append(1)
             else:
                 op_type.append(0)
         # loss some info in op id 
-        self.feature += op_type + [float(op.est_rows), op.row_size()]
+        op_info = op['op_info']
+        row_size = float(op_info.split(':')[-1])
+        self.feature += op_type + [float(op['est_rows']), row_size]
 
     def walk_operator_tree(self, op: Operator):
         self.add_operator(op)
-        for child in op.children:
+        if op['children'] == None:
+            return self.feature
+
+        for child in op['children']:
             self.walk_operator_tree(child)
         # YOUR CODE HERE: process and return the features
         return self.feature
@@ -111,7 +117,7 @@ class SelfMSELoss(nn.Module):
         super().__init__()
 
     def forward(self, x, y):
-        return -torch.mean(torch.pow(((x - y) / (x + y)), 2))
+        return -torch.mean(torch.pow(((x - y) / (x + y)), 3))
 
 
 def count_operator_num(op: Operator):
@@ -144,7 +150,7 @@ def estimate_learning(train_plans, test_plans):
         pass
 
     # YOUR CODE HERE: complete training loop
-    num_epoch = 5
+    num_epoch = 25
     total_loss = 0
     for epoch in range(num_epoch):
         print(f"epoch {epoch} start")
@@ -162,7 +168,7 @@ def estimate_learning(train_plans, test_plans):
         # YOUR CODE HERE: evaluate on train data
         # x,y = data
         pass
-
+    torch.save(model.state_dict(), 'lab2-learning.pt')
     test_dataset = PlanDataset(test_plans, max_operator_num)
     test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=1, shuffle=True, num_workers=1)
 
@@ -179,3 +185,25 @@ def estimate_learning(train_plans, test_plans):
         pass
 
     return train_est_times, train_act_times, test_est_times, test_act_times
+
+
+def load_cost_model():
+    cost_model = YourModel()
+    cost_model.load_state_dict(torch.load('./data/lab2-learning.pt'))
+    return cost_model
+
+
+def predict(model, test_plan):
+    collector = PlanFeatureCollector()
+    vec = collector.walk_operator_tree(test_plan)
+    # YOUR CODE HERE: maybe you need padding the features if you choose the second way to extract the features.
+    padding_size = 80
+
+    if len(vec) >= 80:
+        vec = vec[:padding_size]
+    while len(vec) < 80:
+        vec.append(0)
+
+    features = torch.Tensor(vec)
+
+    return model(features).tolist()[0]

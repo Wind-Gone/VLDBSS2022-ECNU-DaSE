@@ -1,9 +1,10 @@
-import evaluation_utils as eval_utils
 import json
-import statistics as stats
-import range_query as rq
+
+import evaluation_utils as eval_utils
 import learn_from_data
 import learn_from_query
+import range_query as rq
+import statistics as stats
 
 
 def gen_report(act, est_results):
@@ -40,8 +41,8 @@ def est_spn(csvfile, train_data, table_stats):
 
 if __name__ == '__main__':
     stats_json_file = 'data/title_stats.json'
-    train_json_file = 'data/query_train_2000.json'
-    test_json_file = 'data/query_test_500.json'
+    train_json_file = 'data/query_train_20000.json'
+    test_json_file = 'data/query_test_5000.json'
     columns = ['kind_id', 'production_year', 'imdb_id', 'episode_of_id', 'season_nr', 'episode_nr']
 
     table_stats = stats.TableStats.load_from_json_file(stats_json_file, columns)
@@ -75,4 +76,3 @@ if __name__ == '__main__':
         "mlp": est_mlp,
         "xgb": est_xgb,
     })
-

@@ -1,11 +1,10 @@
 import csv
 from enum import Enum
+from statistics import Histogram
 
 import numpy as np
 from networkx import from_numpy_matrix, connected_components
 from sklearn.cluster import KMeans
-
-from statistics import Histogram
 
 
 class Operation(Enum):

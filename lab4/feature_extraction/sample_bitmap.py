@@ -1,5 +1,6 @@
 import json
 import re
+
 import pandas as pd
 
 
@@ -7,13 +8,14 @@ def add_sample_bitmap(input_path, output_path, data, sample, sample_num):
     with open(input_path, 'r') as ff:
         with open(output_path, 'w') as f:
             for count, plan in enumerate(ff.readlines()):
-                print (count)
+                print(count)
                 parsed_plan = json.loads(plan)
                 nodes_with_sample = []
                 for node in parsed_plan['seq']:
                     bitmap_filter = []
                     bitmap_index = []
                     bitmap_other = []
+                    bitmap = []
                     if node != None and 'condition' in node:
                         bitmap_other = get_preds_bitmap(node['condition'], data, sample, sample_num)
                     if node != None and 'condition_filter' in node:
@@ -23,12 +25,15 @@ def add_sample_bitmap(input_path, output_path, data, sample, sample_num):
                     if len(bitmap_filter) > 0 or len(bitmap_index) > 0 or len(bitmap_other) > 0:
                         # YOUR CODE HERE: merge these bitmaps into a single bitmap.
                         # You can use the function bitand here.
+                        bitmap = bitand(bitmap_other, bitmap_filter)
+                        bitmap = bitand(bitmap, bitmap_index)
                         node['bitmap'] = ''.join([str(x) for x in bitmap])
+                        # print(node['bitmap'])
                     nodes_with_sample.append(node)
                 parsed_plan['seq'] = nodes_with_sample
                 f.write(json.dumps(parsed_plan))
                 f.write('\n')
-                
+
 
 def get_preds_bitmap(preds, data, sample, sample_num):
     if len(preds) == 0:
@@ -71,9 +76,15 @@ def get_bitmap_from_predtree(root, data, sample, sample_num):
         if predicate['operator'] == 'AND':
             # YOUR CODE HERE: get the bitmap for this AND operator.
             # You can use the function bitand here.
+            for child in root.get_children():
+                vec = get_bitmap_from_predtree(child, data, sample, sample_num)
+                bitmap = bitand(bitmap, vec)
         elif predicate['operator'] == 'OR':
             # YOUR CODE HERE: get the bitmap for this OR operator.
             # You can use the function bitor here.
+            for child in root.get_children():
+                vec = get_bitmap_from_predtree(child, data, sample, sample_num)
+                bitmap = bitor(bitmap, vec)
         else:
             print(predicate['operator'])
             raise

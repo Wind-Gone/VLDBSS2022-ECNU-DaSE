@@ -1,5 +1,7 @@
-import pytest
 import json
+
+import pytest
+
 
 class Test_simple():
     def test_card(self):
@@ -16,23 +18,23 @@ class Test_simple():
         spn10000 = data.get('spn_sample_10000')
         spn20000 = data.get('spn_sample_20000')
 
-        assert(len(act) > 0)
-        assert(len(act) == len(avi))
-        assert(len(act) == len(ebo))
-        assert(len(act) == len(mlp))
-        assert(len(act) == len(xgb))
-        assert(len(act) == len(min_sel))
-        assert(len(act) == len(spn1000))
-        assert(len(act) == len(spn10000))
-        assert(len(act) == len(spn20000))
-        assert(sum(avi) > 0)
-        assert(sum(ebo) > 0)
-        assert(sum(min_sel) > 0)
-        assert(sum(mlp) > 0)
-        assert(sum(xgb) > 0)
-        assert(sum(spn1000) > 0)
-        assert(sum(spn10000) > 0)
-        assert(sum(spn20000) > 0)
+        assert (len(act) > 0)
+        assert (len(act) == len(avi))
+        assert (len(act) == len(ebo))
+        assert (len(act) == len(mlp))
+        assert (len(act) == len(xgb))
+        assert (len(act) == len(min_sel))
+        assert (len(act) == len(spn1000))
+        assert (len(act) == len(spn10000))
+        assert (len(act) == len(spn20000))
+        assert (sum(avi) > 0)
+        assert (sum(ebo) > 0)
+        assert (sum(min_sel) > 0)
+        assert (sum(mlp) > 0)
+        assert (sum(xgb) > 0)
+        assert (sum(spn1000) > 0)
+        assert (sum(spn10000) > 0)
+        assert (sum(spn20000) > 0)
 
 
 if __name__ == '__main__':

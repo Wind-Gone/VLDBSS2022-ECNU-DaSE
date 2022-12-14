@@ -1,6 +1,5 @@
 import joblib
 import numpy as np
-from sklearn.linear_model import LinearRegression
 
 
 def estimate_plan(operator, factors, weights):
@@ -95,60 +94,20 @@ def estimate_plan(operator, factors, weights):
     return cost
 
 
-# 准备回归训练的数据
-def prepare_train_data(factors, weights, act_times):
-    X_train = []
-    y_train = []
-    for weight in weights:
-        weight_array = []
-        for k, v in weight.items():
-            v *= factors[k]
-            weight_array.append(v)
-        weight_array = np.array(weight_array).astype(np.float32)
-        X_train.append(weight_array)
-    y_train = np.array(act_times).astype(np.float32)
-    return np.nan_to_num(X_train), np.nan_to_num(y_train)
+def load_cost_model():
+    cost_model = joblib.load('./data/lab2-linreg.pkl')
+    return cost_model
 
 
-def estimate_calibration(train_plans, test_plans):
-    # init factors
-    factors = {
-        "cpu": 1,
-        "scan": 1,
-        "net": 1,
-        "seek": 1,
-    }
-
-    # get training data: factor weights and act_time
-    est_costs_before = []
-    act_times = []
-    weights = []
-    for p in train_plans:
-        w = {"cpu": 0, "scan": 0, "net": 0, "seek": 0}
-        cost = estimate_plan(p.root, factors, w)
-        weights.append(w)
-        act_times.append(p.exec_time_in_ms())
-        est_costs_before.append(cost)
-
-    # YOUR CODE HERE
-    # calibrate your cost model with regression and get the best factors
-    # factors * weights ==> act_time
-    linreg = LinearRegression()
-    X_train, y_train = prepare_train_data(factors, weights, act_times)
-    linreg.fit(X_train, y_train)
-    joblib.dump(linreg, "data/lab2-linreg.pkl")
-    new_factors = {}
-    new_factors['cpu'] = linreg.coef_.data[0]
-    new_factors['scan'] = linreg.coef_.data[1]
-    new_factors['net'] = linreg.coef_.data[2]
-    new_factors['seek'] = linreg.coef_.data[3]
-    print("--->>> regression cost factors: ", new_factors)
-
+def predict(model, test_plan):
     # evaluation
     est_costs = []
-    for p in test_plans:
-        w = {"cpu": 0, "scan": 0, "net": 0, "seek": 0}
-        cost = estimate_plan(p.root, new_factors, w)
-        est_costs.append(cost)
-
+    new_factors = {}
+    new_factors['cpu'] = model.coef_.data[0]
+    new_factors['scan'] = model.coef_.data[1]
+    new_factors['net'] = model.coef_.data[2]
+    new_factors['seek'] = model.coef_.data[3]
+    w = {"cpu": 0, "scan": 0, "net": 0, "seek": 0}
+    cost = estimate_plan(test_plan.root, new_factors, w)
+    est_costs.append(cost)
     return est_costs

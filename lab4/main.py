@@ -1,21 +1,23 @@
-import torch
-from data_loader import load_dictionary, load_numeric_min_max, load_plans_and_obtain_bounds, prepare_imdb_dataset_for_encoding, prepare_imdb_dataset_for_extraction, load_imdb_dataset
 import os
 from os import path
-from util import EncodeContext
 
+import torch
+
+from data_loader import load_dictionary, load_numeric_min_max, load_plans_and_obtain_bounds, \
+    prepare_imdb_dataset_for_encoding, prepare_imdb_dataset_for_extraction, load_imdb_dataset
 from feature_extraction.extract_features import feature_extractor
 from feature_extraction.sample_bitmap import prepare_samples, add_sample_bitmap
-
 from plan_encoding.encode_plan import encode_and_save_job_plans
-
-from training.train_and_test import train_and_test
 from training.eval import model_eval
+from training.train_and_test import train_and_test
+from util import EncodeContext
+
 
 def extract_feature():
     dataset = load_imdb_dataset('./data/imdb_data_csv')
     print('load imdb dataset')
-    column2pos, indexes_id, tables_id, columns_id, physic_ops_id, compare_ops_id, bool_ops_id, table_names = prepare_imdb_dataset_for_extraction(dataset)
+    column2pos, indexes_id, tables_id, columns_id, physic_ops_id, compare_ops_id, bool_ops_id, table_names = prepare_imdb_dataset_for_extraction(
+        dataset)
 
     feature_extractor('./data/plans.json', './data/plans_seq.json')
     print('extract plan features')
@@ -28,7 +30,8 @@ def extract_feature():
 
 def encode_plan():
     data_dir = 'data'
-    data, tables_id, columns_id, indexes_id, physical_ops_id, compare_ops_id, bool_ops_id = prepare_imdb_dataset_for_encoding(data_dir)
+    data, tables_id, columns_id, indexes_id, physical_ops_id, compare_ops_id, bool_ops_id = prepare_imdb_dataset_for_encoding(
+        data_dir)
     print('data prepared')
     # YOUR CODE HERE: set the word_vectros_path which is used to encoding strings or just put wordvectors_updated.kv and
     # wordvectors_updated.kv.vectors.npy under data directory.
@@ -53,7 +56,8 @@ def encode_plan():
 
 def train():
     data_dir = 'data'
-    data, tables_id, columns_id, indexes_id, physical_ops_id, compare_ops_id, bool_ops_id = prepare_imdb_dataset_for_encoding(data_dir)
+    data, tables_id, columns_id, indexes_id, physical_ops_id, compare_ops_id, bool_ops_id = prepare_imdb_dataset_for_encoding(
+        data_dir)
     print('data prepared')
     min_max_values = load_numeric_min_max(path.join(data_dir, 'min_max_vals.json'))
     print('min_max loaded')
@@ -71,9 +75,10 @@ def train():
     print("finish")
 
 
-def eval():    
+def eval():
     data_dir = 'data'
-    data, tables_id, columns_id, indexes_id, physical_ops_id, compare_ops_id, bool_ops_id = prepare_imdb_dataset_for_encoding(data_dir)
+    data, tables_id, columns_id, indexes_id, physical_ops_id, compare_ops_id, bool_ops_id = prepare_imdb_dataset_for_encoding(
+        data_dir)
     print('data prepared')
     min_max_values = load_numeric_min_max(path.join(data_dir, 'min_max_vals.json'))
     print('min_max loaded')
@@ -104,5 +109,3 @@ if __name__ == '__main__':
     train()
     # Load the model and use batch 22-24 for evaluation. It generates cardinality.png, cost.png and results.json.
     eval()
-
-

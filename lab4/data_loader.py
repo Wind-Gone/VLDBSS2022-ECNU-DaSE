@@ -1,8 +1,9 @@
-from gensim.models import KeyedVectors
 import json
 import math
 from os import path
+
 import pandas as pd
+from gensim.models import KeyedVectors
 
 
 # load_imdb_dataset loads imdb datasets from CSV files in the specified directory.
@@ -228,9 +229,9 @@ def load_imdb_dataset(dir_path):
 def prepare_imdb_dataset_for_extraction(database):
     column2pos = dict()
 
-    tables = ['aka_name', 'aka_title', 'cast_info', 'char_name', 'company_name', 'company_type', 
-              'comp_cast_type', 'complete_cast', 'info_type', 'keyword', 'kind_type', 'link_type', 
-              'movie_companies', 'movie_info', 'movie_info_idx', 'movie_keyword', 'movie_link', 
+    tables = ['aka_name', 'aka_title', 'cast_info', 'char_name', 'company_name', 'company_type',
+              'comp_cast_type', 'complete_cast', 'info_type', 'keyword', 'kind_type', 'link_type',
+              'movie_companies', 'movie_info', 'movie_info_idx', 'movie_keyword', 'movie_link',
               'name', 'person_info', 'role_type', 'title']
 
     for table_name in tables:
@@ -250,12 +251,12 @@ def prepare_imdb_dataset_for_extraction(database):
     indexes_id = dict()
     for idx, index in enumerate(indexes):
         indexes_id[index] = idx + 1
-    physic_ops_id = {'Materialize':1, 'Sort':2, 'Hash':3, 'Merge Join':4, 'Bitmap Index Scan':5,
-                     'Index Only Scan':6, 'BitmapAnd':7, 'Nested Loop':8, 'Aggregate':9, 'Result':10,
-                     'Hash Join':11, 'Seq Scan':12, 'Bitmap Heap Scan':13, 'Index Scan':14, 'BitmapOr':15}
-    strategy_id = {'Plain':1}
-    compare_ops_id = {'=':1, '>':2, '<':3, '!=':4, '~~':5, '!~~':6, '!Null': 7, '>=':8, '<=':9}
-    bool_ops_id = {'AND':1,'OR':2}
+    physic_ops_id = {'Materialize': 1, 'Sort': 2, 'Hash': 3, 'Merge Join': 4, 'Bitmap Index Scan': 5,
+                     'Index Only Scan': 6, 'BitmapAnd': 7, 'Nested Loop': 8, 'Aggregate': 9, 'Result': 10,
+                     'Hash Join': 11, 'Seq Scan': 12, 'Bitmap Heap Scan': 13, 'Index Scan': 14, 'BitmapOr': 15}
+    strategy_id = {'Plain': 1}
+    compare_ops_id = {'=': 1, '>': 2, '<': 3, '!=': 4, '~~': 5, '!~~': 6, '!Null': 7, '>=': 8, '<=': 9}
+    bool_ops_id = {'AND': 1, 'OR': 2}
     tables_id = {}
     columns_id = {}
     table_id = 1
@@ -264,7 +265,7 @@ def prepare_imdb_dataset_for_extraction(database):
         tables_id[table_name] = table_id
         table_id += 1
         for column in column2pos[table_name]:
-            columns_id[table_name+'.'+column] = column_id
+            columns_id[table_name + '.' + column] = column_id
             column_id += 1
     return column2pos, indexes_id, tables_id, columns_id, physic_ops_id, compare_ops_id, bool_ops_id, tables
 
@@ -390,5 +391,3 @@ def load_plans_and_obtain_bounds(file_path):
     print(f'cost_label_min={cost_label_min}, cost_label_max={cost_label_max}')
     print(f'card_label_min={card_label_min}, card_label_max={card_label_max}')
     return plans, plan_node_max_num, condition_max_num, cost_label_min, cost_label_max, card_label_min, card_label_max
-
-

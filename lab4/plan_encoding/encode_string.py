@@ -158,10 +158,10 @@ def get_str_representation(word_vectors, value, column):
     for v in value.split('%'):
         if len(v) > 0:
             if len(vec) == 0:
-                vec = get_representation(word_vectors, prefix+v)
+                vec = get_representation(word_vectors, prefix + v)
                 count = 1
             else:
-                new_vec = get_representation(word_vectors, prefix+v)
+                new_vec = get_representation(word_vectors, prefix + v)
                 vec = vec + new_vec
                 count += 1
     if count > 0:

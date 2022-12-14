@@ -1,4 +1,5 @@
 import json
+
 import mysql.connector
 
 db = mysql.connector.connect(

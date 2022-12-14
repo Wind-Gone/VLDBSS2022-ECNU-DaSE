@@ -1,5 +1,7 @@
-import pytest
 import json
+
+import pytest
+
 
 class Test_simple():
     def test_lab4(self):
@@ -10,13 +12,14 @@ class Test_simple():
         est_cost = data.get('est_cost')
         act_cardinality = data.get('act_cardinality')
         est_cardinality = data.get('est_cardinality')
-        
-        assert(len(act_cost) > 0)
-        assert(len(act_cost) == len(est_cost))
-        assert(len(act_cost) == len(act_cardinality))
-        assert(len(act_cost) == len(est_cardinality))
-        assert(sum(est_cardinality) > 0)
-        assert(sum(est_cost) > 0)
+
+        assert (len(act_cost) > 0)
+        assert (len(act_cost) == len(est_cost))
+        assert (len(act_cost) == len(act_cardinality))
+        assert (len(act_cost) == len(est_cardinality))
+        assert (sum(est_cardinality) > 0)
+        assert (sum(est_cost) > 0)
+
 
 if __name__ == '__main__':
     pytest.main(['test_result.py'])

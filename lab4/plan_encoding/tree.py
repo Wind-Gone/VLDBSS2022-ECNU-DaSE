@@ -29,15 +29,15 @@ def recover_tree(vec, parent, start_idx):
     if len(vec) == 0:
         return vec, start_idx
     if vec[0] is None:
-        return vec[1:], start_idx+1
+        return vec[1:], start_idx + 1
     node = TreeNode(vec[0], parent, start_idx, -1)
     while True:
-        vec, start_idx = recover_tree(vec[1:], node, start_idx+1)
+        vec, start_idx = recover_tree(vec[1:], node, start_idx + 1)
         parent.add_child(node)
         if len(vec) == 0:
             return vec, start_idx
         if vec[0] is None:
-            return vec[1:], start_idx+1
+            return vec[1:], start_idx + 1
         node = TreeNode(vec[0], parent, start_idx, -1)
 
 
@@ -54,7 +54,7 @@ def dfs_tree_to_level(root, level_id, nodes_by_level):
     nodes_by_level[level_id].append(root)
     root.idx = len(nodes_by_level[level_id])
     for c in root.get_children():
-        dfs_tree_to_level(c, level_id+1, nodes_by_level)
+        dfs_tree_to_level(c, level_id + 1, nodes_by_level)
 
 
 def parse_plan_tree(vec):

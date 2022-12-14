@@ -1,5 +1,6 @@
-import torch
 import numpy as np
+import torch
+
 
 def normalize_label(labels, mini, maxi):
     labels_norm = (np.log(labels) - mini) / (maxi - mini)
@@ -10,6 +11,7 @@ def normalize_label(labels, mini, maxi):
 
 def unnormalize(vecs, mini, maxi):
     return torch.exp(vecs * (maxi - mini) + mini)
+
 
 class EncodeContext:
     def __init__(self, data, word_vectors, min_max_values, tables_id, columns_id, indexes_id, physical_ops_id,

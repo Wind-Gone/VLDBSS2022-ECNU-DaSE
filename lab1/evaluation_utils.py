@@ -22,7 +22,7 @@ def cal_p_error(act, est):
         act, est = est, act
     if est == 0:
         est = 1
-    return act/est
+    return act / est
 
 
 def cal_p_error_distribution(act_rows, est_rows):
